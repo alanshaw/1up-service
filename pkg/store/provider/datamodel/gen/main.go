@@ -1,13 +1,13 @@
 package main
 
 import (
-	ddm "github.com/alanshaw/1up-service/pkg/capabilities/debug/datamodel"
+	pdm "github.com/alanshaw/1up-service/pkg/store/provider/datamodel"
 	cbg "github.com/whyrusleeping/cbor-gen"
 )
 
 func main() {
 	if err := cbg.WriteMapEncodersToFile("../cbor_gen.go", "datamodel",
-		ddm.EchoArgumentsModel{},
+		pdm.ProviderModel{},
 	); err != nil {
 		panic(err)
 	}

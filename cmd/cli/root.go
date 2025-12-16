@@ -90,7 +90,7 @@ func initLogging() {
 		// else set all loggers to warn level, then the ones we care most about to info.
 		logging.SetAllLoggers(logging.LevelWarn)
 		logging.SetLogLevel("cmd/serve", "info")
-		// logging.SetLogLevel("fx/upload/ucan", "info")
-		// logging.SetLogLevel("service/upload/ucan", "debug")
+		logging.SetLogLevel("fx/upload/ucan", "info")
+		logging.SetLogLevel("service/upload/ucan", "info")
 	}
 }

@@ -40,6 +40,7 @@ func NewServer(p Params) (*Server, error) {
 	ucanSvr := server.NewHTTP(p.Identity.Signer, p.Options...)
 	log.Infof("Registering %d UCAN handlers", len(p.Handlers))
 	for _, h := range p.Handlers {
+		log.Infof("Registering %q UCAN handler", h.Capability.Command())
 		ucanSvr.Handle(h.Capability, h.Handler)
 	}
 	return &Server{ucanSvr}, nil
