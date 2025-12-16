@@ -56,6 +56,8 @@ var Cmd = &cobra.Command{
 
 			root.Module,
 
+			app.UploadModule,
+
 			// Post-startup operations: print server info and record telemetry
 			fx.Invoke(func(lc fx.Lifecycle) {
 				lc.Append(fx.Hook{

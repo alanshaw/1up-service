@@ -10,7 +10,7 @@ import (
 	"github.com/alanshaw/1up-service/pkg/server"
 )
 
-var Module = fx.Module("root-handler",
+var Module = fx.Module("root_handler",
 	fx.Provide(
 		fx.Annotate(
 			NewRootHandler,
