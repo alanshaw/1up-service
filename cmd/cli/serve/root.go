@@ -3,11 +3,12 @@ package serve
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
+	"github.com/alanshaw/1up-service/pkg/build"
 	"github.com/alanshaw/1up-service/pkg/config"
 	"github.com/alanshaw/1up-service/pkg/fx/app"
+	"github.com/alanshaw/1up-service/pkg/fx/root"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -53,11 +54,21 @@ var Cmd = &cobra.Command{
 			//   - databases & datastores
 			app.CommonModules(appCfg),
 
+			root.Module,
+
 			// Post-startup operations: print server info and record telemetry
 			fx.Invoke(func(lc fx.Lifecycle) {
 				lc.Append(fx.Hook{
 					OnStart: func(ctx context.Context) error {
-						cmd.Println("Server running on: " + appCfg.Server.Host + ":" + strconv.Itoa(int(appCfg.Server.Port)))
+						cmd.Println("")
+						cmd.Println("▗     ")
+						cmd.Println("▜ ▌▌▛▌")
+						cmd.Println("▟▖▙▌▙▌")
+						cmd.Println("    ▌ ")
+						cmd.Println("")
+						cmd.Printf("🍄 1up-service %s\n", build.Version)
+						cmd.Printf("🆔 %s\n", appCfg.Identity.Signer.DID())
+						cmd.Printf("🚀 Ready! Server running on: http://%s:%d\n", appCfg.Server.Host, appCfg.Server.Port)
 						return nil
 					},
 					OnStop: func(ctx context.Context) error {
