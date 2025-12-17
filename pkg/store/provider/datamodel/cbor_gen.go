@@ -8,7 +8,6 @@ import (
 	"math"
 	"sort"
 
-	delegation "github.com/alanshaw/ucantone/ucan/delegation"
 	cid "github.com/ipfs/go-cid"
 	cbg "github.com/whyrusleeping/cbor-gen"
 	xerrors "golang.org/x/xerrors"
@@ -27,23 +26,7 @@ func (t *ProviderModel) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{164}); err != nil {
-		return err
-	}
-
-	// t.Proof (delegation.Delegation) (struct)
-	if len("proof") > 8192 {
-		return xerrors.Errorf("Value in field \"proof\" was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("proof"))); err != nil {
-		return err
-	}
-	if _, err := cw.WriteString(string("proof")); err != nil {
-		return err
-	}
-
-	if err := t.Proof.MarshalCBOR(cw); err != nil {
+	if _, err := cw.Write([]byte{163}); err != nil {
 		return err
 	}
 
@@ -145,27 +128,7 @@ func (t *ProviderModel) UnmarshalCBOR(r io.Reader) (err error) {
 		}
 
 		switch string(nameBuf[:nameLen]) {
-		// t.Proof (delegation.Delegation) (struct)
-		case "proof":
-
-			{
-
-				b, err := cr.ReadByte()
-				if err != nil {
-					return err
-				}
-				if b != cbg.CborNull[0] {
-					if err := cr.UnreadByte(); err != nil {
-						return err
-					}
-					t.Proof = new(delegation.Delegation)
-					if err := t.Proof.UnmarshalCBOR(cr); err != nil {
-						return xerrors.Errorf("unmarshaling t.Proof pointer: %w", err)
-					}
-				}
-
-			}
-			// t.Weight (uint64) (uint64)
+		// t.Weight (uint64) (uint64)
 		case "weight":
 
 			{

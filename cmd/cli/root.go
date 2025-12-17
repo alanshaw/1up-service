@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/alanshaw/1up-service/cmd/cli/client"
 	"github.com/alanshaw/1up-service/cmd/cli/serve"
 	"github.com/alanshaw/1up-service/pkg/build"
 )
@@ -50,6 +51,7 @@ func init() {
 	cobra.CheckErr(viper.BindPFlag("identity.key_file", rootCmd.PersistentFlags().Lookup("key-file")))
 
 	// register all commands and their subcommands
+	rootCmd.AddCommand(client.Cmd)
 	rootCmd.AddCommand(serve.Cmd)
 }
 

@@ -26,24 +26,8 @@ func (t *RegisterArgumentsModel) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{163}); err != nil {
+	if _, err := cw.Write([]byte{162}); err != nil {
 		return err
-	}
-
-	// t.Proof (cid.Cid) (struct)
-	if len("proof") > 8192 {
-		return xerrors.Errorf("Value in field \"proof\" was too long")
-	}
-
-	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("proof"))); err != nil {
-		return err
-	}
-	if _, err := cw.WriteString(string("proof")); err != nil {
-		return err
-	}
-
-	if err := cbg.WriteCid(cw, t.Proof); err != nil {
-		return xerrors.Errorf("failed to write cid field t.Proof: %w", err)
 	}
 
 	// t.Endpoint (string) (string)
@@ -128,20 +112,7 @@ func (t *RegisterArgumentsModel) UnmarshalCBOR(r io.Reader) (err error) {
 		}
 
 		switch string(nameBuf[:nameLen]) {
-		// t.Proof (cid.Cid) (struct)
-		case "proof":
-
-			{
-
-				c, err := cbg.ReadCid(cr)
-				if err != nil {
-					return xerrors.Errorf("failed to read cid field t.Proof: %w", err)
-				}
-
-				t.Proof = c
-
-			}
-			// t.Endpoint (string) (string)
+		// t.Endpoint (string) (string)
 		case "endpoint":
 
 			{

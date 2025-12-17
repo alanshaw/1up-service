@@ -1,13 +1,11 @@
 package root
 
 import (
+	echofx "github.com/alanshaw/1up-service/pkg/fx/echo"
+	"github.com/alanshaw/1up-service/pkg/server"
 	"github.com/alanshaw/ucantone/principal"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
-
-	"github.com/alanshaw/1up-service/pkg/config/app"
-	echofx "github.com/alanshaw/1up-service/pkg/fx/echo"
-	"github.com/alanshaw/1up-service/pkg/server"
 )
 
 var Module = fx.Module("root_handler",
@@ -26,8 +24,8 @@ type Handler struct {
 	id principal.Signer
 }
 
-func NewRootHandler(cfg app.IdentityConfig) *Handler {
-	return &Handler{id: cfg.Signer}
+func NewRootHandler(id principal.Signer) *Handler {
+	return &Handler{id}
 }
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {

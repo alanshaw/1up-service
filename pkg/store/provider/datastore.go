@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"net/url"
 
 	"github.com/alanshaw/1up-service/pkg/store"
 	"github.com/alanshaw/1up-service/pkg/store/provider/datamodel"
@@ -65,12 +66,17 @@ func (d *DSProviderStore) List(ctx context.Context) iter.Seq2[datamodel.Provider
 	}
 }
 
-func (d *DSProviderStore) Put(ctx context.Context, model datamodel.ProviderModel) error {
+func (d *DSProviderStore) Put(ctx context.Context, id did.DID, endpoint *url.URL) error {
+	model := datamodel.ProviderModel{
+		Provider: id,
+		Endpoint: endpoint.String(),
+		Weight:   0,
+	}
 	var buf bytes.Buffer
 	if err := model.MarshalCBOR(&buf); err != nil {
 		return err
 	}
-	return d.ds.Put(ctx, datastore.NewKey(model.Provider.String()), buf.Bytes())
+	return d.ds.Put(ctx, datastore.NewKey(id.String()), buf.Bytes())
 }
 
 var _ Store = (*DSProviderStore)(nil)

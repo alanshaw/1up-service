@@ -1,10 +1,10 @@
 package ucan
 
 import (
-	"github.com/alanshaw/1up-service/pkg/config/app"
 	echofx "github.com/alanshaw/1up-service/pkg/fx/echo"
 	"github.com/alanshaw/1up-service/pkg/fx/upload/ucan/handlers"
 	"github.com/alanshaw/1up-service/pkg/service"
+	"github.com/alanshaw/ucantone/principal"
 	"github.com/alanshaw/ucantone/server"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/labstack/echo/v4"
@@ -31,16 +31,16 @@ var Module = fx.Module("upload/ucan/server",
 
 type Params struct {
 	fx.In
-	Identity app.IdentityConfig
+	ID       principal.Signer
 	Handlers []*service.Handler  `group:"ucan_handlers"`
 	Options  []server.HTTPOption `group:"ucan_options"`
 }
 
 func NewServer(p Params) (*Server, error) {
-	ucanSvr := server.NewHTTP(p.Identity.Signer, p.Options...)
+	ucanSvr := server.NewHTTP(p.ID, p.Options...)
 	log.Infof("Registering %d UCAN handlers", len(p.Handlers))
 	for _, h := range p.Handlers {
-		log.Infof("Registering %q UCAN handler", h.Capability.Command())
+		log.Infof("%q", h.Capability.Command())
 		ucanSvr.Handle(h.Capability, h.Handler)
 	}
 	return &Server{ucanSvr}, nil
