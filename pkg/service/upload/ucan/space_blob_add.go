@@ -254,6 +254,8 @@ func deriveDID(digest multihash.Multihash) (ucan_ed.Ed25519Signer, error) {
 	return ucan_ed.FromRaw(pk[:ed25519.SeedSize])
 }
 
+// maybeAccept generates and possibly executes a `/blob/accept` invocation if
+// the provided put receipt is non-nil and non-failure.
 func maybeAccept(
 	ctx context.Context,
 	id principal.Signer,
