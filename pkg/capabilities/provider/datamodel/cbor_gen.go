@@ -498,7 +498,7 @@ func (t *RegisterArgumentsModel) UnmarshalCBOR(r io.Reader) (err error) {
 
 	return nil
 }
-func (t *RegisterOKModel) MarshalCBOR(w io.Writer) error {
+func (t *DeregisterArgumentsModel) MarshalCBOR(w io.Writer) error {
 	if t == nil {
 		_, err := w.Write(cbg.CborNull)
 		return err
@@ -506,14 +506,30 @@ func (t *RegisterOKModel) MarshalCBOR(w io.Writer) error {
 
 	cw := cbg.NewCborWriter(w)
 
-	if _, err := cw.Write([]byte{160}); err != nil {
+	if _, err := cw.Write([]byte{161}); err != nil {
+		return err
+	}
+
+	// t.Provider (did.DID) (struct)
+	if len("provider") > 8192 {
+		return xerrors.Errorf("Value in field \"provider\" was too long")
+	}
+
+	if err := cw.WriteMajorTypeHeader(cbg.MajTextString, uint64(len("provider"))); err != nil {
+		return err
+	}
+	if _, err := cw.WriteString(string("provider")); err != nil {
+		return err
+	}
+
+	if err := t.Provider.MarshalCBOR(cw); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (t *RegisterOKModel) UnmarshalCBOR(r io.Reader) (err error) {
-	*t = RegisterOKModel{}
+func (t *DeregisterArgumentsModel) UnmarshalCBOR(r io.Reader) (err error) {
+	*t = DeregisterArgumentsModel{}
 
 	cr := cbg.NewCborReader(r)
 
@@ -532,12 +548,12 @@ func (t *RegisterOKModel) UnmarshalCBOR(r io.Reader) (err error) {
 	}
 
 	if extra > cbg.MaxLength {
-		return fmt.Errorf("RegisterOKModel: map struct too large (%d)", extra)
+		return fmt.Errorf("DeregisterArgumentsModel: map struct too large (%d)", extra)
 	}
 
 	n := extra
 
-	nameBuf := make([]byte, 0)
+	nameBuf := make([]byte, 8)
 	for i := uint64(0); i < n; i++ {
 		nameLen, ok, err := cbg.ReadFullStringIntoBuf(cr, nameBuf, 8192)
 		if err != nil {
@@ -553,6 +569,16 @@ func (t *RegisterOKModel) UnmarshalCBOR(r io.Reader) (err error) {
 		}
 
 		switch string(nameBuf[:nameLen]) {
+		// t.Provider (did.DID) (struct)
+		case "provider":
+
+			{
+
+				if err := t.Provider.UnmarshalCBOR(cr); err != nil {
+					return xerrors.Errorf("unmarshaling t.Provider: %w", err)
+				}
+
+			}
 
 		default:
 			// Field doesn't exist on this type, so ignore it

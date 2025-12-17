@@ -15,6 +15,12 @@ var Module = fx.Module("storage/ucan/handlers",
 	),
 	fx.Provide(
 		fx.Annotate(
+			ucan.NewProviderDeregisterHandler,
+			fx.ResultTags(`group:"ucan_handlers"`),
+		),
+	),
+	fx.Provide(
+		fx.Annotate(
 			ucan.NewProviderListHandler,
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),
@@ -22,6 +28,12 @@ var Module = fx.Module("storage/ucan/handlers",
 	fx.Provide(
 		fx.Annotate(
 			ucan.NewProviderRegisterHandler,
+			fx.ResultTags(`group:"ucan_handlers"`),
+		),
+	),
+	fx.Provide(
+		fx.Annotate(
+			ucan.NewProviderWeightSetHandler,
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),
 	),

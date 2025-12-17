@@ -14,4 +14,5 @@ type Store interface {
 	Del(ctx context.Context, id did.DID) error
 	Get(ctx context.Context, id did.DID) (datamodel.ProviderModel, error)
 	List(ctx context.Context) iter.Seq2[datamodel.ProviderModel, error]
+	Update(ctx context.Context, id did.DID, update func(datamodel.ProviderModel) (datamodel.ProviderModel, error)) error
 }

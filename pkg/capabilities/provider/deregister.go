@@ -6,11 +6,11 @@ import (
 	"github.com/alanshaw/ucantone/validator/bindcap"
 )
 
-const RegisterCommand = "/provider/register"
+const DeregisterCommand = "/provider/deregister"
 
 type (
-	RegisterArguments = pdm.RegisterArgumentsModel
-	RegisterOK        = cdm.UnitModel
+	DeregisterArguments = pdm.DeregisterArgumentsModel
+	DeregisterOK        = cdm.UnitModel
 )
 
-var Register, _ = bindcap.New[*RegisterArguments](RegisterCommand)
+var Deregister, _ = bindcap.New[*DeregisterArguments](DeregisterCommand)

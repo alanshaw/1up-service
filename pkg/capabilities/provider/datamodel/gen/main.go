@@ -11,7 +11,7 @@ func main() {
 		pdm.ProviderModel{},
 		pdm.ListOKModel{},
 		pdm.RegisterArgumentsModel{},
-		pdm.RegisterOKModel{},
+		pdm.DeregisterArgumentsModel{},
 	); err != nil {
 		panic(err)
 	}

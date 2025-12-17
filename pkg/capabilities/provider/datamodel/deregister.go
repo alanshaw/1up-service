@@ -4,7 +4,6 @@ import (
 	"github.com/alanshaw/ucantone/did"
 )
 
-type RegisterArgumentsModel struct {
+type DeregisterArgumentsModel struct {
 	Provider did.DID `cborgen:"provider"`
-	Endpoint string  `cborgen:"endpoint"`
 }

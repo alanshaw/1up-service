@@ -79,4 +79,23 @@ func (d *DSProviderStore) Put(ctx context.Context, id did.DID, endpoint *url.URL
 	return d.ds.Put(ctx, datastore.NewKey(id.String()), buf.Bytes())
 }
 
+func (d *DSProviderStore) Update(ctx context.Context, did did.DID, update func(datamodel.ProviderModel) (datamodel.ProviderModel, error)) error {
+	model, err := d.Get(ctx, did)
+	if err != nil {
+		if errors.Is(err, datastore.ErrNotFound) {
+			return store.ErrNotFound
+		}
+		return err
+	}
+	updatedModel, err := update(model)
+	if err != nil {
+		return err
+	}
+	var buf bytes.Buffer
+	if err := updatedModel.MarshalCBOR(&buf); err != nil {
+		return err
+	}
+	return d.ds.Put(ctx, datastore.NewKey(did.String()), buf.Bytes())
+}
+
 var _ Store = (*DSProviderStore)(nil)
