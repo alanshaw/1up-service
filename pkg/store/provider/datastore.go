@@ -8,8 +8,8 @@ import (
 	"iter"
 	"net/url"
 
+	"github.com/alanshaw/1up-service/pkg/capabilities/provider/datamodel"
 	"github.com/alanshaw/1up-service/pkg/store"
-	"github.com/alanshaw/1up-service/pkg/store/provider/datamodel"
 	"github.com/alanshaw/ucantone/did"
 	"github.com/ipfs/go-datastore"
 	"github.com/ipfs/go-datastore/query"

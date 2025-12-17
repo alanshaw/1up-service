@@ -15,6 +15,12 @@ var Module = fx.Module("storage/ucan/handlers",
 	),
 	fx.Provide(
 		fx.Annotate(
+			ucan.NewProviderListHandler,
+			fx.ResultTags(`group:"ucan_handlers"`),
+		),
+	),
+	fx.Provide(
+		fx.Annotate(
 			ucan.NewProviderRegisterHandler,
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),

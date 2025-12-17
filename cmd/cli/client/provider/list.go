@@ -1,11 +1,10 @@
 package provider
 
 import (
-	"net/url"
+	"fmt"
 
 	"github.com/alanshaw/1up-service/cmd/cli/client/lib"
 	"github.com/alanshaw/1up-service/pkg/capabilities/provider"
-	"github.com/alanshaw/ucantone/did"
 	"github.com/alanshaw/ucantone/execution"
 	"github.com/alanshaw/ucantone/ipld"
 	"github.com/alanshaw/ucantone/ipld/datamodel"
@@ -14,31 +13,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var registerCmd = &cobra.Command{
-	Use:     "register <node-did> <node-url>",
-	Aliases: []string{"add"},
-	Short:   "Register a storage node with the service",
-	Args:    cobra.ExactArgs(2),
-	RunE:    doRegister,
+var listCmd = &cobra.Command{
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "List registered storage nodes",
+	Args:    cobra.NoArgs,
+	RunE:    doList,
 }
 
-func doRegister(cmd *cobra.Command, args []string) error {
+func doList(cmd *cobra.Command, args []string) error {
 	signer, client, err := lib.InitClient()
 	cobra.CheckErr(err)
 
-	id, err := did.Parse(args[0])
-	cobra.CheckErr(err)
-
-	endpoint, err := url.Parse(args[1])
-	cobra.CheckErr(err)
-
-	inv, err := provider.Register.Invoke(
+	inv, err := provider.List.Invoke(
 		signer,
 		signer,
-		&provider.RegisterArguments{
-			Provider: id,
-			Endpoint: endpoint.String(),
-		},
+		&provider.ListArguments{},
 		invocation.WithAudience(signer),
 	)
 	cobra.CheckErr(err)
@@ -49,10 +39,21 @@ func doRegister(cmd *cobra.Command, args []string) error {
 	result.MatchResultR0(
 		res.Result(),
 		func(o ipld.Any) {
-			args := provider.RegisterOK{}
+			args := provider.ListOK{}
 			err := datamodel.Rebind(datamodel.NewAny(o), &args)
 			cobra.CheckErr(err)
-			cmd.Println("Provider registered successfully")
+
+			if len(args.Providers) == 0 {
+				cmd.Println("No providers registered")
+				return
+			}
+
+			table := lib.NewTable(cmd.OutOrStdout())
+			table.SetHeader([]string{"ID", "Weight", "URL"})
+			for _, p := range args.Providers {
+				table.Append([]string{p.Provider.String(), fmt.Sprintf("%d", p.Weight), p.Endpoint})
+			}
+			table.Render()
 		},
 		func(x ipld.Any) {
 			cmd.Printf("Invocation failed: %+v\n", x)

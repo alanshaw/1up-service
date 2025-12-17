@@ -24,6 +24,11 @@ func NewProviderRegisterHandler(id principal.Signer, providerStore provider.Stor
 						errors.New("InvalidEndpoint", fmt.Sprintf("parsing endpoint: %s", err.Error())),
 					))
 				}
+				if req.Invocation().Issuer().DID() != id.DID() && req.Invocation().Issuer().DID() != args.Provider {
+					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.RegisterOK](
+						errors.New("Unauthorized", "only the service identity or the provider itself can register a provider"),
+					))
+				}
 				log.Infow(
 					"registering storage provider",
 					"id", args.Provider,
