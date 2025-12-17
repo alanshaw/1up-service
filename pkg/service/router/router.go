@@ -3,11 +3,21 @@ package router
 import (
 	"context"
 	"math/rand"
+	"net/url"
+	"slices"
 
 	"github.com/alanshaw/1up-service/pkg/store/provider"
 	"github.com/alanshaw/ucantone/ucan"
+	logging "github.com/ipfs/go-log/v2"
 	"github.com/multiformats/go-multihash"
 )
+
+var log = logging.Logger("service/router")
+
+type ProviderInfo struct {
+	ID       ucan.Principal
+	Endpoint *url.URL
+}
 
 type Router struct {
 	providerStore provider.Store
@@ -18,20 +28,38 @@ func NewRouter(providerStore provider.Store) *Router {
 }
 
 // Select chooses a registered storage provider based on provider weight.
-func (r *Router) Select(ctx context.Context, digest multihash.Multihash, size uint64) (ucan.Principal, error) {
-	ids := []ucan.Principal{}
-	weights := []uint64{}
+func (r *Router) Select(ctx context.Context, digest multihash.Multihash, size uint64, options ...SelectOption) (ProviderInfo, error) {
+	cfg := &selectConfig{}
+	for _, opt := range options {
+		opt(cfg)
+	}
+
+	var candidates []ProviderInfo
+	var weights []uint64
 	for p, err := range r.providerStore.List(ctx) {
 		if err != nil {
-			return nil, err
+			return ProviderInfo{}, err
 		}
-		ids = append(ids, p.Provider)
+		if slices.ContainsFunc(cfg.exclusions, func(e ucan.Principal) bool {
+			return e.DID() == p.Provider
+		}) {
+			continue
+		}
+		endpoint, err := url.Parse(p.Endpoint)
+		if err != nil {
+			log.Warnf("provider %q has invalid endpoint: %w", p.Provider.DID(), err)
+			continue
+		}
+		candidates = append(candidates, ProviderInfo{
+			ID:       p.Provider,
+			Endpoint: endpoint,
+		})
 		weights = append(weights, p.Weight)
 	}
-	if len(ids) == 0 {
-		return nil, NewCandidateUnavailableError("no storage providers available")
+	if len(candidates) == 0 {
+		return ProviderInfo{}, ErrCandidateUnavailable
 	}
-	return ids[getWeightedRandomInt(weights)], nil
+	return candidates[getWeightedRandomInt(weights)], nil
 }
 
 func getWeightedRandomInt(weights []uint64) int {

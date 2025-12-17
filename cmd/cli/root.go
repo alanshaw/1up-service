@@ -94,5 +94,14 @@ func initLogging() {
 		logging.SetLogLevel("cmd/serve", "info")
 		logging.SetLogLevel("fx/upload/ucan", "info")
 		logging.SetLogLevel("service/upload/ucan", "info")
+		for _, cmd := range []string{
+			"/debug/echo",
+			"/provider/deregister",
+			"/provider/register",
+			"/provider/weight/set",
+			"/space/blob/add",
+		} {
+			logging.SetLogLevel("service/upload/ucan"+cmd, "info")
+		}
 	}
 }

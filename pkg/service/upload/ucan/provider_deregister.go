@@ -7,7 +7,10 @@ import (
 	"github.com/alanshaw/ucantone/errors"
 	"github.com/alanshaw/ucantone/execution/bindexec"
 	"github.com/alanshaw/ucantone/principal"
+	logging "github.com/ipfs/go-log/v2"
 )
+
+var provDeregLog = logging.Logger("service/upload/ucan" + provider_caps.DeregisterCommand)
 
 func NewProviderDeregisterHandler(id principal.Signer, providerStore provider.Store) *service.Handler {
 	return &service.Handler{
@@ -16,11 +19,11 @@ func NewProviderDeregisterHandler(id principal.Signer, providerStore provider.St
 			func(req *bindexec.Request[*provider_caps.DeregisterArguments]) (*bindexec.Response[*provider_caps.DeregisterOK], error) {
 				args := req.Task().BindArguments()
 				if req.Invocation().Issuer().DID() != id.DID() && req.Invocation().Issuer().DID() != args.Provider {
-					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.RegisterOK](
-						errors.New("Unauthorized", "only the service identity or the provider itself can register a provider"),
+					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.DeregisterOK](
+						errors.New("Unauthorized", "only the service identity or the provider itself can deregister a provider"),
 					))
 				}
-				log.Infow("deregistering storage provider", "id", args.Provider)
+				provDeregLog.Infow("deregistering storage provider", "id", args.Provider)
 				err := providerStore.Del(req.Context(), args.Provider)
 				if err != nil {
 					return nil, err

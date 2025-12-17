@@ -10,7 +10,10 @@ import (
 	"github.com/alanshaw/ucantone/errors"
 	"github.com/alanshaw/ucantone/execution/bindexec"
 	"github.com/alanshaw/ucantone/principal"
+	logging "github.com/ipfs/go-log/v2"
 )
+
+var provRegLog = logging.Logger("service/upload/ucan" + provider_caps.RegisterCommand)
 
 func NewProviderRegisterHandler(id principal.Signer, providerStore provider.Store) *service.Handler {
 	return &service.Handler{
@@ -29,7 +32,7 @@ func NewProviderRegisterHandler(id principal.Signer, providerStore provider.Stor
 						errors.New("Unauthorized", "only the service identity or the provider itself can register a provider"),
 					))
 				}
-				log.Infow(
+				provRegLog.Infow(
 					"registering storage provider",
 					"id", args.Provider,
 					"endpoint", args.Endpoint,

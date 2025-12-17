@@ -7,7 +7,6 @@ import (
 	"github.com/alanshaw/ucantone/ipld"
 	"github.com/alanshaw/ucantone/ipld/datamodel"
 	"github.com/alanshaw/ucantone/result"
-	"github.com/alanshaw/ucantone/ucan/invocation"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +27,6 @@ func doEcho(cmd *cobra.Command, args []string) error {
 		&debug.EchoArguments{
 			Message: args[0],
 		},
-		invocation.WithAudience(signer),
 	)
 	cobra.CheckErr(err)
 

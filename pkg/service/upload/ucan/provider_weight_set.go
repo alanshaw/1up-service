@@ -8,7 +8,10 @@ import (
 	ucan_errors "github.com/alanshaw/ucantone/errors"
 	"github.com/alanshaw/ucantone/execution/bindexec"
 	"github.com/alanshaw/ucantone/principal"
+	logging "github.com/ipfs/go-log/v2"
 )
+
+var provWeightSetLog = logging.Logger("service/upload/ucan" + weight_caps.SetCommand)
 
 func NewProviderWeightSetHandler(id principal.Signer, providerStore provider.Store) *service.Handler {
 	return &service.Handler{
@@ -21,7 +24,7 @@ func NewProviderWeightSetHandler(id principal.Signer, providerStore provider.Sto
 						ucan_errors.New("Unauthorized", "only the service identity can set provider weight"),
 					))
 				}
-				log.Infow("setting provider weight", "id", args.Provider, "weight", args.Weight)
+				provWeightSetLog.Infow("setting provider weight", "id", args.Provider, "weight", args.Weight)
 				err := providerStore.Update(req.Context(), args.Provider, func(p provider_caps.Provider) (provider_caps.Provider, error) {
 					p.Weight = args.Weight
 					return p, nil
