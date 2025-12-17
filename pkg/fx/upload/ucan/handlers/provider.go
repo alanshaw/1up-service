@@ -6,7 +6,7 @@ import (
 	"github.com/alanshaw/1up-service/pkg/service/upload/ucan"
 )
 
-var Module = fx.Module("storage/ucan/handlers",
+var Module = fx.Module("upload/ucan/handlers",
 	fx.Provide(
 		fx.Annotate(
 			ucan.NewDebugEchoHandler,
@@ -34,6 +34,12 @@ var Module = fx.Module("storage/ucan/handlers",
 	fx.Provide(
 		fx.Annotate(
 			ucan.NewProviderWeightSetHandler,
+			fx.ResultTags(`group:"ucan_handlers"`),
+		),
+	),
+	fx.Provide(
+		fx.Annotate(
+			ucan.NewSpaceBlobAddHandler,
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),
 	),
