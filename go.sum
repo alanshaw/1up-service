@@ -1,7 +1,7 @@
 github.com/alanshaw/dag-json-gen v0.0.3 h1:SymTJ80G0Qw41ukJ8ocevbTPr8Y3CWJFdhB4huro47E=
 github.com/alanshaw/dag-json-gen v0.0.3/go.mod h1:rXxWw0SItP9QjxpRMpkju66h0KumF7TPCtvHdOKS5lY=
-github.com/alanshaw/libracha v0.0.0-20251218092423-53dc717208b6 h1:AOHQr0AvL8dAgghfnR0n4D4MZis1CtvyJ/IrFdXvCVE=
-github.com/alanshaw/libracha v0.0.0-20251218092423-53dc717208b6/go.mod h1:vxpWwMl+MVEkUikizGEqQxppnmHNQbIqVqPJ8QWmSNo=
+github.com/alanshaw/libracha v0.0.0-20251218104736-36f9038d7f52 h1:g53ad1jyUuFcItl23yR9BsY8rrKSBIO5e/1cmm57kC0=
+github.com/alanshaw/libracha v0.0.0-20251218104736-36f9038d7f52/go.mod h1:sLkbaUOPPIG07WlEMQ6IR8fvTu1J7zN5WIrFBC1RPQk=
 github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72 h1:YRZOu3urmN4MspI/drfhH0TDwjTCZ47rtafYh3R6lng=
 github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72/go.mod h1:OkhxH4U/b9qvbp/07s1Ra5g37p0IsxVdkLOzkTrERoM=
 github.com/clipperhouse/stringish v0.1.1 h1:+NSqMOr3GR6k1FdRhhnXrLfztGzuG+VuFDfatpWHKCs=

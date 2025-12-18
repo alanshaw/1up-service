@@ -6,13 +6,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alanshaw/1up-service/pkg/lib/digestutil"
-	ucanlib "github.com/alanshaw/1up-service/pkg/lib/ucan"
 	"github.com/alanshaw/1up-service/pkg/service"
 	"github.com/alanshaw/1up-service/pkg/service/router"
 	"github.com/alanshaw/1up-service/pkg/store/delegation"
 	blob_caps "github.com/alanshaw/libracha/capabilities/blob"
 	http_caps "github.com/alanshaw/libracha/capabilities/http"
+	"github.com/alanshaw/libracha/digestutil"
+	ucanlib "github.com/alanshaw/libracha/ucan"
 	"github.com/alanshaw/ucantone/client"
 	"github.com/alanshaw/ucantone/execution"
 	"github.com/alanshaw/ucantone/execution/bindexec"
@@ -114,7 +114,7 @@ func doAllocate(
 		log := log.With("candidate", candidate.ID)
 		log.Infow("selected storage provider candidate")
 
-		proofs, proofLinks, err := ucanlib.ConstructProofChain(pstore, id, blob_caps.AllocateCommand, space)
+		proofs, proofLinks, err := ucanlib.ProofChain(pstore, id, blob_caps.AllocateCommand, space)
 		if err != nil {
 			log.Warnw("failed to construct proof chain", "error", err)
 			continue
@@ -271,7 +271,7 @@ func maybeAccept(
 	)
 	log.Info("generating accept invocation")
 
-	proofs, proofLinks, err := ucanlib.ConstructProofChain(pstore, id, blob_caps.AcceptCommand, space)
+	proofs, proofLinks, err := ucanlib.ProofChain(pstore, id, blob_caps.AcceptCommand, space)
 	if err != nil {
 		return nil, nil, err
 	}

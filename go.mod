@@ -3,14 +3,13 @@ module github.com/alanshaw/1up-service
 go 1.25.3
 
 require (
-	github.com/alanshaw/libracha v0.0.0-20251218092423-53dc717208b6
+	github.com/alanshaw/libracha v0.0.0-20251218104736-36f9038d7f52
 	github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72
 	github.com/go-playground/validator/v10 v10.29.0
 	github.com/ipfs/go-datastore v0.9.0
 	github.com/ipfs/go-ds-leveldb v0.5.2
 	github.com/ipfs/go-log/v2 v2.9.0
 	github.com/labstack/echo/v4 v4.14.0
-	github.com/multiformats/go-multibase v0.2.0
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/samber/lo v1.52.0
@@ -46,6 +45,7 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.0.3 // indirect
 	github.com/multiformats/go-base36 v0.1.0 // indirect
+	github.com/multiformats/go-multibase v0.2.0 // indirect
 	github.com/multiformats/go-varint v0.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
