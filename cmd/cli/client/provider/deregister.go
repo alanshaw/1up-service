@@ -2,7 +2,7 @@ package provider
 
 import (
 	"github.com/alanshaw/1up-service/cmd/cli/client/lib"
-	"github.com/alanshaw/1up-service/pkg/capabilities/provider"
+	"github.com/alanshaw/libracha/capabilities/provider"
 	"github.com/alanshaw/ucantone/did"
 	"github.com/alanshaw/ucantone/execution"
 	"github.com/alanshaw/ucantone/ipld"

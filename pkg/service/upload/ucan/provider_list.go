@@ -1,9 +1,9 @@
 package ucan
 
 import (
-	provider_caps "github.com/alanshaw/1up-service/pkg/capabilities/provider"
 	"github.com/alanshaw/1up-service/pkg/service"
 	"github.com/alanshaw/1up-service/pkg/store/provider"
+	provider_caps "github.com/alanshaw/libracha/capabilities/provider"
 	"github.com/alanshaw/ucantone/errors"
 	"github.com/alanshaw/ucantone/execution/bindexec"
 	"github.com/alanshaw/ucantone/principal"

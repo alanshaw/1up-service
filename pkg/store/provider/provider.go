@@ -5,7 +5,7 @@ import (
 	"iter"
 	"net/url"
 
-	"github.com/alanshaw/1up-service/pkg/capabilities/provider/datamodel"
+	"github.com/alanshaw/libracha/capabilities/provider/datamodel"
 	"github.com/alanshaw/ucantone/did"
 )
 

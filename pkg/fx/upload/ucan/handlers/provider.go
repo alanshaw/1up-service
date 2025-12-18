@@ -39,7 +39,7 @@ var Module = fx.Module("upload/ucan/handlers",
 	),
 	fx.Provide(
 		fx.Annotate(
-			ucan.NewSpaceBlobAddHandler,
+			ucan.NewBlobAddHandler,
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),
 	),

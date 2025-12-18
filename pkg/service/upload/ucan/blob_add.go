@@ -6,14 +6,13 @@ import (
 	"errors"
 	"fmt"
 
-	blob_caps "github.com/alanshaw/1up-service/pkg/capabilities/blob"
-	http_caps "github.com/alanshaw/1up-service/pkg/capabilities/http"
-	space_blob_caps "github.com/alanshaw/1up-service/pkg/capabilities/space/blob"
 	"github.com/alanshaw/1up-service/pkg/lib/digestutil"
 	ucanlib "github.com/alanshaw/1up-service/pkg/lib/ucan"
 	"github.com/alanshaw/1up-service/pkg/service"
 	"github.com/alanshaw/1up-service/pkg/service/router"
 	"github.com/alanshaw/1up-service/pkg/store/delegation"
+	blob_caps "github.com/alanshaw/libracha/capabilities/blob"
+	http_caps "github.com/alanshaw/libracha/capabilities/http"
 	"github.com/alanshaw/ucantone/client"
 	"github.com/alanshaw/ucantone/execution"
 	"github.com/alanshaw/ucantone/execution/bindexec"
@@ -31,24 +30,25 @@ import (
 	"github.com/multiformats/go-multihash"
 )
 
-var spaceBlobAddLog = logging.Logger("service/upload/ucan" + space_blob_caps.AddCommand)
+var blobAddLog = logging.Logger("service/upload/ucan" + blob_caps.AddCommand)
 
-func NewSpaceBlobAddHandler(id principal.Signer, rt *router.Router) *service.Handler {
+func NewBlobAddHandler(id principal.Signer, rt *router.Router) *service.Handler {
 	return &service.Handler{
-		Capability: space_blob_caps.Add,
+		Capability: blob_caps.Add,
 		Handler: bindexec.NewHandler(
-			func(req *bindexec.Request[*space_blob_caps.AddArguments]) (*bindexec.Response[*space_blob_caps.AddOK], error) {
+			func(req *bindexec.Request[*blob_caps.AddArguments]) (*bindexec.Response[*blob_caps.AddOK], error) {
 				args := req.Task().BindArguments()
 				space := req.Invocation().Subject()
 				blob := args.Blob
 				cause := req.Invocation().Task().Link()
 				pstore := delegation.NewMapDelegationStore(req.Metadata().Delegations())
+				log := blobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
 
 				provider, allocInv, allocRcpt, allocOK, err := doAllocate(req.Context(), id, rt, pstore, space, blob, cause)
 				if err != nil {
 					if errors.Is(err, router.ErrCandidateUnavailable) {
-						spaceBlobAddLog.Errorw("unable to select a storage provider", "error", err)
-						return bindexec.NewResponse(bindexec.WithFailure[*space_blob_caps.AddOK](err))
+						log.Errorw("unable to select a storage provider", "error", err)
+						return bindexec.NewResponse(bindexec.WithFailure[*blob_caps.AddOK](err))
 					}
 					return nil, err
 				}
@@ -84,12 +84,10 @@ func NewSpaceBlobAddHandler(id principal.Signer, rt *router.Router) *service.Han
 				)
 
 				return bindexec.NewResponse(
-					bindexec.WithSuccess(&space_blob_caps.AddOK{
-						Site: promise.AwaitOK{
-							Task: accInv.Task().Link(),
-						},
+					bindexec.WithSuccess(&blob_caps.AddOK{
+						Site: promise.AwaitOK{Task: accInv.Task().Link()},
 					}),
-					bindexec.WithMetadata[*space_blob_caps.AddOK](meta),
+					bindexec.WithMetadata[*blob_caps.AddOK](meta),
 				)
 			},
 		),
@@ -102,10 +100,10 @@ func doAllocate(
 	rt *router.Router,
 	pstore delegation.Store,
 	space ucan.Subject,
-	blob space_blob_caps.Blob,
+	blob blob_caps.Blob,
 	cause ucan.Link,
 ) (router.ProviderInfo, ucan.Invocation, ucan.Receipt, blob_caps.AllocateOK, error) {
-	log := spaceBlobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
+	log := blobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
 
 	var exclusions []ucan.Principal
 	for {
@@ -182,8 +180,8 @@ func doAllocate(
 // Generates an invocation to put the blob to the storage provider. It MAY
 // return a receipt if the allocation result indicates that the provider already
 // has the blob.
-func genPut(blob space_blob_caps.Blob, allocInv ucan.Invocation, allocOK blob_caps.AllocateOK) (ucan.Invocation, ucan.Receipt, error) {
-	log := spaceBlobAddLog.With(
+func genPut(blob blob_caps.Blob, allocInv ucan.Invocation, allocOK blob_caps.AllocateOK) (ucan.Invocation, ucan.Receipt, error) {
+	log := blobAddLog.With(
 		"space", allocInv.Subject().DID(),
 		"digest", digestutil.Format(blob.Digest),
 		"provider", allocInv.Audience().DID(),
@@ -262,11 +260,11 @@ func maybeAccept(
 	provider router.ProviderInfo,
 	space ucan.Principal,
 	pstore delegation.Store,
-	blob space_blob_caps.Blob,
+	blob blob_caps.Blob,
 	putInv ucan.Invocation,
 	putRcpt ucan.Receipt,
 ) (ucan.Invocation, ucan.Receipt, error) {
-	log := spaceBlobAddLog.With(
+	log := blobAddLog.With(
 		"space", space.DID(),
 		"digest", digestutil.Format(blob.Digest),
 		"provider", provider.ID.DID(),

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/alanshaw/1up-service/cmd/cli/client/lib"
-	"github.com/alanshaw/1up-service/pkg/capabilities/provider"
+	"github.com/alanshaw/libracha/capabilities/provider"
 	"github.com/alanshaw/ucantone/execution"
 	"github.com/alanshaw/ucantone/ipld"
 	"github.com/alanshaw/ucantone/ipld/datamodel"
