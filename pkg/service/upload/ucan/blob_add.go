@@ -114,7 +114,7 @@ func doAllocate(
 		log := log.With("candidate", candidate.ID)
 		log.Infow("selected storage provider candidate")
 
-		proofs, proofLinks, err := ucanlib.ProofChain(pstore, id, blob_caps.AllocateCommand, space)
+		proofs, proofLinks, err := ucanlib.ProofChain(ctx, pstore, id, blob_caps.AllocateCommand, space)
 		if err != nil {
 			log.Warnw("failed to construct proof chain", "error", err)
 			continue
@@ -271,7 +271,7 @@ func maybeAccept(
 	)
 	log.Info("generating accept invocation")
 
-	proofs, proofLinks, err := ucanlib.ProofChain(pstore, id, blob_caps.AcceptCommand, space)
+	proofs, proofLinks, err := ucanlib.ProofChain(ctx, pstore, id, blob_caps.AcceptCommand, space)
 	if err != nil {
 		return nil, nil, err
 	}

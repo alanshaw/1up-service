@@ -1,6 +1,8 @@
 package delegation
 
 import (
+	"context"
+
 	"github.com/alanshaw/1up-service/pkg/store"
 	"github.com/alanshaw/ucantone/did"
 	"github.com/alanshaw/ucantone/ucan"
@@ -43,7 +45,7 @@ func NewMapDelegationStore(delegations []ucan.Delegation) *MapDelegationStore {
 	return &MapDelegationStore{data}
 }
 
-func (m *MapDelegationStore) Query(aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) ([]ucan.Delegation, error) {
+func (m *MapDelegationStore) Query(ctx context.Context, aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) ([]ucan.Delegation, error) {
 	cmdDelegations, ok := m.data[aud.DID()]
 	if !ok {
 		return nil, store.ErrNotFound
