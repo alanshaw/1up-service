@@ -3,7 +3,7 @@ module github.com/alanshaw/1up-service
 go 1.25.3
 
 require (
-	github.com/alanshaw/libracha v0.0.0-20251218121221-d35b3fa1e8aa
+	github.com/alanshaw/libracha v0.0.0-20251218165400-91e0fc26a243
 	github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72
 	github.com/go-playground/validator/v10 v10.29.0
 	github.com/ipfs/go-datastore v0.9.0

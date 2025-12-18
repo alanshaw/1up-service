@@ -24,7 +24,7 @@ type Router struct {
 }
 
 func NewRouter(providerStore provider.Store) *Router {
-	return &Router{}
+	return &Router{providerStore}
 }
 
 // Select chooses a registered storage provider based on provider weight.
@@ -50,14 +50,20 @@ func (r *Router) Select(ctx context.Context, digest multihash.Multihash, size ui
 			log.Warnf("provider %q has invalid endpoint: %w", p.Provider.DID(), err)
 			continue
 		}
+		if p.Weight == 0 {
+			continue
+		}
 		candidates = append(candidates, ProviderInfo{
 			ID:       p.Provider,
 			Endpoint: endpoint,
 		})
 		weights = append(weights, p.Weight)
 	}
-	if len(candidates) == 0 {
+	switch len(candidates) {
+	case 0:
 		return ProviderInfo{}, ErrCandidateUnavailable
+	case 1:
+		return candidates[0], nil
 	}
 	return candidates[getWeightedRandomInt(weights)], nil
 }

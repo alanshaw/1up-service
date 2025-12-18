@@ -6,7 +6,6 @@ import (
 
 	"github.com/alanshaw/ucantone/did"
 	"github.com/alanshaw/ucantone/ucan"
-	"github.com/alanshaw/ucantone/ucan/command"
 )
 
 const nullSubject = "null"
@@ -45,36 +44,27 @@ func NewMapDelegationStore(delegations []ucan.Delegation) *MapDelegationStore {
 	return &MapDelegationStore{data}
 }
 
-func (m *MapDelegationStore) Query(ctx context.Context, aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) iter.Seq2[ucan.Delegation, error] {
+func (m *MapDelegationStore) FindByAudienceCommandSubject(ctx context.Context, aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) iter.Seq2[ucan.Delegation, error] {
 	return func(yield func(ucan.Delegation, error) bool) {
 		cmdDelegations, ok := m.data[aud.DID()]
 		if !ok {
 			return
 		}
-
-		segs := cmd.Segments()
-		for i := len(segs) - 1; i >= 0; i-- {
-			cmd := command.Top().Join(segs[0 : i+1]...)
-			subDelegations, ok := cmdDelegations[cmd]
-			if !ok {
+		subDelegations, ok := cmdDelegations[cmd]
+		if !ok {
+			return
+		}
+		subStr := nullSubject
+		if sub != nil {
+			subStr = sub.DID().String()
+		}
+		dlgs, ok := subDelegations[subStr]
+		if !ok {
+			return
+		}
+		for _, d := range dlgs {
+			if !yield(d, nil) {
 				return
-			}
-			dlgs, ok := subDelegations[sub.DID().String()]
-			if !ok {
-				dlgs, ok = subDelegations[nullSubject]
-				if !ok {
-					return
-				}
-			} else {
-				powerlineDlgs, ok := subDelegations[nullSubject]
-				if ok {
-					dlgs = append(dlgs, powerlineDlgs...)
-				}
-			}
-			for _, d := range dlgs {
-				if !yield(d, nil) {
-					return
-				}
 			}
 		}
 	}
