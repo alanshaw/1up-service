@@ -2,8 +2,8 @@ package delegation
 
 import (
 	"context"
+	"iter"
 
-	"github.com/alanshaw/1up-service/pkg/store"
 	"github.com/alanshaw/ucantone/did"
 	"github.com/alanshaw/ucantone/ucan"
 	"github.com/alanshaw/ucantone/ucan/command"
@@ -45,34 +45,37 @@ func NewMapDelegationStore(delegations []ucan.Delegation) *MapDelegationStore {
 	return &MapDelegationStore{data}
 }
 
-func (m *MapDelegationStore) Query(ctx context.Context, aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) ([]ucan.Delegation, error) {
-	cmdDelegations, ok := m.data[aud.DID()]
-	if !ok {
-		return nil, store.ErrNotFound
-	}
-
-	var delegations []ucan.Delegation
-	segs := cmd.Segments()
-	for i := len(segs) - 1; i >= 0; i-- {
-		cmd := command.Top().Join(segs[0 : i+1]...)
-		subDelegations, ok := cmdDelegations[cmd]
+func (m *MapDelegationStore) Query(ctx context.Context, aud ucan.Principal, cmd ucan.Command, sub ucan.Subject) iter.Seq2[ucan.Delegation, error] {
+	return func(yield func(ucan.Delegation, error) bool) {
+		cmdDelegations, ok := m.data[aud.DID()]
 		if !ok {
-			return nil, store.ErrNotFound
+			return
 		}
-		dlgs, ok := subDelegations[sub.DID().String()]
-		if !ok {
-			dlgs, ok = subDelegations[nullSubject]
+
+		segs := cmd.Segments()
+		for i := len(segs) - 1; i >= 0; i-- {
+			cmd := command.Top().Join(segs[0 : i+1]...)
+			subDelegations, ok := cmdDelegations[cmd]
 			if !ok {
-				return nil, store.ErrNotFound
+				return
 			}
-		} else {
-			powerlineDlgs, ok := subDelegations[nullSubject]
-			if ok {
-				dlgs = append(dlgs, powerlineDlgs...)
+			dlgs, ok := subDelegations[sub.DID().String()]
+			if !ok {
+				dlgs, ok = subDelegations[nullSubject]
+				if !ok {
+					return
+				}
+			} else {
+				powerlineDlgs, ok := subDelegations[nullSubject]
+				if ok {
+					dlgs = append(dlgs, powerlineDlgs...)
+				}
+			}
+			for _, d := range dlgs {
+				if !yield(d, nil) {
+					return
+				}
 			}
 		}
-		delegations = append(delegations, dlgs...)
 	}
-
-	return delegations, nil
 }
