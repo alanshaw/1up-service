@@ -43,4 +43,10 @@ var Module = fx.Module("upload/ucan/handlers",
 			fx.ResultTags(`group:"ucan_handlers"`),
 		),
 	),
+	fx.Provide(
+		fx.Annotate(
+			ucan.NewUCANConcludeHandler,
+			fx.ResultTags(`group:"ucan_handlers"`),
+		),
+	),
 )

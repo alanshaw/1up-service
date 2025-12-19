@@ -134,6 +134,7 @@ func doAllocate(
 				Blob:  blob_caps.Blob(blob),
 				Cause: cause,
 			},
+			invocation.WithAudience(candidate.ID),
 			invocation.WithProofs(proofLinks...),
 		)
 		if err != nil {

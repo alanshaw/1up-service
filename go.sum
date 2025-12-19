@@ -8,6 +8,10 @@ github.com/alanshaw/libracha v0.0.0-20251218121221-d35b3fa1e8aa h1:/e7RgTI2td7GL
 github.com/alanshaw/libracha v0.0.0-20251218121221-d35b3fa1e8aa/go.mod h1:sLkbaUOPPIG07WlEMQ6IR8fvTu1J7zN5WIrFBC1RPQk=
 github.com/alanshaw/libracha v0.0.0-20251218165400-91e0fc26a243 h1:4U/FJKVgp48UroyedH7IsAJsRFL4gYSyFgP9aZQC8Fg=
 github.com/alanshaw/libracha v0.0.0-20251218165400-91e0fc26a243/go.mod h1:sLkbaUOPPIG07WlEMQ6IR8fvTu1J7zN5WIrFBC1RPQk=
+github.com/alanshaw/libracha v0.0.0-20251219144520-2b936a3c9e96 h1:Z16CgoPKnkSLQVaspU/YWdDbd1uB5cma6AL7yn1Aqas=
+github.com/alanshaw/libracha v0.0.0-20251219144520-2b936a3c9e96/go.mod h1:sLkbaUOPPIG07WlEMQ6IR8fvTu1J7zN5WIrFBC1RPQk=
+github.com/alanshaw/libracha v0.0.0-20251219144841-bc96c56a118a h1:d+JxH8hvIYx5ThT5BkoqspNncVHNISxlFKqxAmzc1us=
+github.com/alanshaw/libracha v0.0.0-20251219144841-bc96c56a118a/go.mod h1:sLkbaUOPPIG07WlEMQ6IR8fvTu1J7zN5WIrFBC1RPQk=
 github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72 h1:YRZOu3urmN4MspI/drfhH0TDwjTCZ47rtafYh3R6lng=
 github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72/go.mod h1:OkhxH4U/b9qvbp/07s1Ra5g37p0IsxVdkLOzkTrERoM=
 github.com/clipperhouse/stringish v0.1.1 h1:+NSqMOr3GR6k1FdRhhnXrLfztGzuG+VuFDfatpWHKCs=
