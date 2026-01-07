@@ -4,7 +4,7 @@ go 1.25.3
 
 require (
 	github.com/alanshaw/libracha v0.0.0-20251219144841-bc96c56a118a
-	github.com/alanshaw/ucantone v0.0.0-20251216172216-fb5018e58e72
+	github.com/alanshaw/ucantone v0.0.0-20260107142715-f3e55efdef36
 	github.com/go-playground/validator/v10 v10.29.0
 	github.com/ipfs/go-datastore v0.9.0
 	github.com/ipfs/go-ds-leveldb v0.5.2
@@ -21,7 +21,7 @@ require (
 )
 
 require (
-	github.com/alanshaw/dag-json-gen v0.0.3 // indirect
+	github.com/alanshaw/dag-json-gen v0.0.4 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

@@ -107,7 +107,7 @@ func doAllocate(
 
 	var exclusions []ucan.Principal
 	for {
-		candidate, err := rt.Select(ctx, blob.Digest, blob.Size, router.WithExclusions(exclusions...))
+		candidate, err := rt.Select(ctx, router.WithExclusions(exclusions...))
 		if err != nil {
 			return router.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
@@ -153,7 +153,7 @@ func doAllocate(
 			continue
 		}
 
-		o, x := result.Unwrap(res.Result())
+		o, x := result.Unwrap(res.Out())
 		if x != nil {
 			log.Errorw("failure result for allocation", "error", x)
 			exclusions = append(exclusions, candidate.ID)

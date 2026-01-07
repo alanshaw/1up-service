@@ -47,7 +47,7 @@ func doRegister(cmd *cobra.Command, args []string) error {
 	cobra.CheckErr(err)
 
 	result.MatchResultR0(
-		res.Result(),
+		res.Out(),
 		func(o ipld.Any) {
 			args := provider.RegisterOK{}
 			err := datamodel.Rebind(datamodel.NewAny(o), &args)

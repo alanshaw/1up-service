@@ -37,7 +37,7 @@ func doList(cmd *cobra.Command, args []string) error {
 	cobra.CheckErr(err)
 
 	result.MatchResultR0(
-		res.Result(),
+		res.Out(),
 		func(o ipld.Any) {
 			args := provider.ListOK{}
 			err := datamodel.Rebind(datamodel.NewAny(o), &args)

@@ -9,7 +9,6 @@ import (
 	"github.com/alanshaw/1up-service/pkg/store/provider"
 	"github.com/alanshaw/ucantone/ucan"
 	logging "github.com/ipfs/go-log/v2"
-	"github.com/multiformats/go-multihash"
 )
 
 var log = logging.Logger("service/router")
@@ -28,7 +27,7 @@ func NewRouter(providerStore provider.Store) *Router {
 }
 
 // Select chooses a registered storage provider based on provider weight.
-func (r *Router) Select(ctx context.Context, digest multihash.Multihash, size uint64, options ...SelectOption) (ProviderInfo, error) {
+func (r *Router) Select(ctx context.Context, options ...SelectOption) (ProviderInfo, error) {
 	cfg := &selectConfig{}
 	for _, opt := range options {
 		opt(cfg)

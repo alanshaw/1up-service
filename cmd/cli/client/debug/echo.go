@@ -34,7 +34,7 @@ func doEcho(cmd *cobra.Command, args []string) error {
 	cobra.CheckErr(err)
 
 	result.MatchResultR0(
-		res.Result(),
+		res.Out(),
 		func(o ipld.Any) {
 			args := debug.EchoOK{}
 			err := datamodel.Rebind(datamodel.NewAny(o), &args)
