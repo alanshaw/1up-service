@@ -8,6 +8,7 @@ import (
 	"github.com/alanshaw/1up-service/pkg/build"
 	"github.com/alanshaw/1up-service/pkg/config"
 	"github.com/alanshaw/1up-service/pkg/fx/app"
+	"github.com/alanshaw/1up-service/pkg/fx/receipt"
 	"github.com/alanshaw/1up-service/pkg/fx/root"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/spf13/cobra"
@@ -73,6 +74,7 @@ func doServe(cmd *cobra.Command, _ []string) error {
 		app.CommonModules(appCfg),
 
 		root.Module,
+		receipt.Module,
 
 		app.UploadModule,
 
