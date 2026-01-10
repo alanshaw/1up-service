@@ -43,7 +43,7 @@ func doSet(cmd *cobra.Command, args []string) error {
 	cobra.CheckErr(err)
 
 	result.MatchResultR0(
-		res.Out(),
+		res.Receipt().Out(),
 		func(o ipld.Any) {
 			args := weight.SetOK{}
 			err := datamodel.Rebind(datamodel.NewAny(o), &args)

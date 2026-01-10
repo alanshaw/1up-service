@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/alanshaw/1up-service/pkg/store/provider"
+	"github.com/alanshaw/1up-service/pkg/store/token"
 	leveldb "github.com/ipfs/go-ds-leveldb"
 	"go.uber.org/fx"
 
@@ -17,6 +18,7 @@ var Module = fx.Module("store",
 	fx.Provide(
 		ProvideConfigs,
 		NewProviderStore,
+		NewTokenStore,
 	),
 )
 
@@ -49,6 +51,25 @@ func NewProviderStore(cfg app.ProviderStorageConfig, lc fx.Lifecycle) (provider.
 	})
 
 	return provider.NewDSProviderStore(ds), nil
+}
+
+func NewTokenStore(cfg app.TokenStorageConfig, lc fx.Lifecycle) (token.Store, error) {
+	if cfg.Dir == "" {
+		return nil, fmt.Errorf("no data dir provided for token store")
+	}
+
+	ds, err := newDatastore(cfg.Dir)
+	if err != nil {
+		return nil, fmt.Errorf("creating token store: %w", err)
+	}
+
+	lc.Append(fx.Hook{
+		OnStop: func(ctx context.Context) error {
+			return ds.Close()
+		},
+	})
+
+	return token.NewDSTokenStore(ds), nil
 }
 
 func newDatastore(path string) (*leveldb.Datastore, error) {

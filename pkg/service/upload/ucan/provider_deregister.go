@@ -16,19 +16,17 @@ func NewProviderDeregisterHandler(id principal.Signer, providerStore provider.St
 	return &service.Handler{
 		Capability: provider_caps.Deregister,
 		Handler: bindexec.NewHandler(
-			func(req *bindexec.Request[*provider_caps.DeregisterArguments]) (*bindexec.Response[*provider_caps.DeregisterOK], error) {
+			func(req *bindexec.Request[*provider_caps.DeregisterArguments], res *bindexec.Response[*provider_caps.DeregisterOK]) error {
 				args := req.Task().BindArguments()
 				if req.Invocation().Issuer().DID() != id.DID() && req.Invocation().Issuer().DID() != args.Provider {
-					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.DeregisterOK](
-						errors.New("Unauthorized", "only the service identity or the provider itself can deregister a provider"),
-					))
+					return res.SetFailure(errors.New("Unauthorized", "only the service identity or the provider itself can deregister a provider"))
 				}
 				provDeregLog.Infow("deregistering storage provider", "id", args.Provider)
 				err := providerStore.Del(req.Context(), args.Provider)
 				if err != nil {
-					return nil, err
+					return err
 				}
-				return bindexec.NewResponse(bindexec.WithSuccess(&provider_caps.DeregisterOK{}))
+				return res.SetSuccess(&provider_caps.DeregisterOK{})
 			},
 		),
 	}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/alanshaw/1up-service/pkg/service"
-	"github.com/alanshaw/1up-service/pkg/service/router"
+	"github.com/alanshaw/1up-service/pkg/service/routing"
 	"github.com/alanshaw/1up-service/pkg/store/delegation"
 	blob_caps "github.com/alanshaw/libracha/capabilities/blob"
 	http_caps "github.com/alanshaw/libracha/capabilities/http"
@@ -32,35 +32,36 @@ import (
 
 var blobAddLog = logging.Logger("service/upload/ucan" + blob_caps.AddCommand)
 
-func NewBlobAddHandler(id principal.Signer, rt *router.Router) *service.Handler {
+func NewBlobAddHandler(id principal.Signer, router *routing.Router) *service.Handler {
 	return &service.Handler{
 		Capability: blob_caps.Add,
 		Handler: bindexec.NewHandler(
-			func(req *bindexec.Request[*blob_caps.AddArguments]) (*bindexec.Response[*blob_caps.AddOK], error) {
-				args := req.Task().BindArguments()
+			func(req *bindexec.Request[*blob_caps.AddArguments], res *bindexec.Response[*blob_caps.AddOK]) error {
+				task := req.Task()
+				args := task.BindArguments()
 				space := req.Invocation().Subject()
 				blob := args.Blob
 				cause := req.Invocation().Task().Link()
 				pstore := delegation.NewMapDelegationStore(req.Metadata().Delegations())
 				log := blobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
 
-				provider, allocInv, allocRcpt, allocOK, err := doAllocate(req.Context(), id, rt, pstore, space, blob, cause)
+				provider, allocInv, allocRcpt, allocOK, err := doAllocate(req.Context(), id, router, pstore, space, blob, cause)
 				if err != nil {
-					if errors.Is(err, router.ErrCandidateUnavailable) {
+					if errors.Is(err, routing.ErrCandidateUnavailable) {
 						log.Errorw("unable to select a storage provider", "error", err)
-						return bindexec.NewResponse(bindexec.WithFailure[*blob_caps.AddOK](err))
+						return res.SetFailure(err)
 					}
-					return nil, err
+					return err
 				}
 
 				putInv, putRcpt, err := genPut(blob, allocInv, allocOK)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				accInv, accRcpt, err := maybeAccept(req.Context(), id, provider, space, pstore, blob, putInv, putRcpt)
 				if err != nil {
-					return nil, err
+					return err
 				}
 
 				invocations := []ucan.Invocation{allocInv, putInv}
@@ -83,12 +84,12 @@ func NewBlobAddHandler(id principal.Signer, rt *router.Router) *service.Handler 
 					container.WithReceipts(receipts...),
 				)
 
-				return bindexec.NewResponse(
-					bindexec.WithSuccess(&blob_caps.AddOK{
-						Site: promise.AwaitOK{Task: accInv.Task().Link()},
-					}),
-					bindexec.WithMetadata[*blob_caps.AddOK](meta),
-				)
+				err = res.SetMetadata(meta)
+				if err != nil {
+					return err
+				}
+
+				return res.SetSuccess(&blob_caps.AddOK{Site: promise.AwaitOK{Task: accInv.Task().Link()}})
 			},
 		),
 	}
@@ -97,19 +98,19 @@ func NewBlobAddHandler(id principal.Signer, rt *router.Router) *service.Handler 
 func doAllocate(
 	ctx context.Context,
 	id principal.Signer,
-	rt *router.Router,
+	router *routing.Router,
 	pstore delegation.Store,
 	space ucan.Subject,
 	blob blob_caps.Blob,
 	cause ucan.Link,
-) (router.ProviderInfo, ucan.Invocation, ucan.Receipt, blob_caps.AllocateOK, error) {
+) (routing.ProviderInfo, ucan.Invocation, ucan.Receipt, blob_caps.AllocateOK, error) {
 	log := blobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
 
 	var exclusions []ucan.Principal
 	for {
-		candidate, err := rt.Select(ctx, router.WithExclusions(exclusions...))
+		candidate, err := router.Select(ctx, routing.WithExclusions(exclusions...))
 		if err != nil {
-			return router.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
+			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
 		log := log.With("candidate", candidate.ID)
 		log.Infow("selected storage provider candidate")
@@ -138,12 +139,12 @@ func doAllocate(
 			invocation.WithProofs(proofLinks...),
 		)
 		if err != nil {
-			return router.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
+			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
 
 		c, err := client.NewHTTP(candidate.Endpoint)
 		if err != nil {
-			return router.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
+			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
 
 		res, err := c.Execute(execution.NewRequest(ctx, inv, execution.WithProofs(proofs...)))
@@ -153,7 +154,7 @@ func doAllocate(
 			continue
 		}
 
-		o, x := result.Unwrap(res.Out())
+		o, x := result.Unwrap(res.Receipt().Out())
 		if x != nil {
 			log.Errorw("failure result for allocation", "error", x)
 			exclusions = append(exclusions, candidate.ID)
@@ -259,7 +260,7 @@ func deriveDID(digest multihash.Multihash) (ucan_ed.Ed25519Signer, error) {
 func maybeAccept(
 	ctx context.Context,
 	id principal.Signer,
-	provider router.ProviderInfo,
+	provider routing.ProviderInfo,
 	space ucan.Principal,
 	pstore delegation.Store,
 	blob blob_caps.Blob,

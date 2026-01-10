@@ -29,6 +29,9 @@ func (r RepoConfig) ToAppConfig() (app.StorageConfig, error) {
 		Provider: app.ProviderStorageConfig{
 			Dir: filepath.Join(r.DataDir, "provider", "datastore"),
 		},
+		Token: app.TokenStorageConfig{
+			Dir: filepath.Join(r.DataDir, "token", "datastore"),
+		},
 	}
 
 	return out, nil

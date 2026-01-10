@@ -19,18 +19,14 @@ func NewProviderRegisterHandler(id principal.Signer, providerStore provider.Stor
 	return &service.Handler{
 		Capability: provider_caps.Register,
 		Handler: bindexec.NewHandler(
-			func(req *bindexec.Request[*provider_caps.RegisterArguments]) (*bindexec.Response[*provider_caps.RegisterOK], error) {
+			func(req *bindexec.Request[*provider_caps.RegisterArguments], res *bindexec.Response[*provider_caps.RegisterOK]) error {
 				args := req.Task().BindArguments()
 				endpoint, err := url.Parse(args.Endpoint)
 				if err != nil {
-					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.RegisterOK](
-						errors.New("InvalidEndpoint", fmt.Sprintf("parsing endpoint: %s", err.Error())),
-					))
+					return res.SetFailure(errors.New("InvalidEndpoint", fmt.Sprintf("parsing endpoint: %s", err.Error())))
 				}
 				if req.Invocation().Issuer().DID() != id.DID() && req.Invocation().Issuer().DID() != args.Provider {
-					return bindexec.NewResponse(bindexec.WithFailure[*provider_caps.RegisterOK](
-						errors.New("Unauthorized", "only the service identity or the provider itself can register a provider"),
-					))
+					return res.SetFailure(errors.New("Unauthorized", "only the service identity or the provider itself can register a provider"))
 				}
 				provRegLog.Infow(
 					"registering storage provider",
@@ -39,9 +35,9 @@ func NewProviderRegisterHandler(id principal.Signer, providerStore provider.Stor
 				)
 				err = providerStore.Put(req.Context(), args.Provider, endpoint)
 				if err != nil {
-					return nil, err
+					return err
 				}
-				return bindexec.NewResponse(bindexec.WithSuccess(&provider_caps.RegisterOK{}))
+				return res.SetSuccess(&provider_caps.RegisterOK{})
 			},
 		),
 	}

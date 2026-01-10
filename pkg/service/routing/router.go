@@ -1,11 +1,13 @@
-package router
+package routing
 
 import (
 	"context"
+	"errors"
 	"math/rand"
 	"net/url"
 	"slices"
 
+	"github.com/alanshaw/1up-service/pkg/store"
 	"github.com/alanshaw/1up-service/pkg/store/provider"
 	"github.com/alanshaw/ucantone/ucan"
 	logging "github.com/ipfs/go-log/v2"
@@ -24,6 +26,25 @@ type Router struct {
 
 func NewRouter(providerStore provider.Store) *Router {
 	return &Router{providerStore}
+}
+
+// Provider returns information about a registered storage provider.
+func (r *Router) Provider(ctx context.Context, id ucan.Principal) (ProviderInfo, error) {
+	p, err := r.providerStore.Get(ctx, id.DID())
+	if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
+			return ProviderInfo{}, ErrNotFound
+		}
+		return ProviderInfo{}, err
+	}
+	endpoint, err := url.Parse(p.Endpoint)
+	if err != nil {
+		return ProviderInfo{}, err
+	}
+	return ProviderInfo{
+		ID:       p.Provider,
+		Endpoint: endpoint,
+	}, nil
 }
 
 // Select chooses a registered storage provider based on provider weight.
