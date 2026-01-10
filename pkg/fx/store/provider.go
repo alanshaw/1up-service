@@ -25,12 +25,14 @@ var Module = fx.Module("store",
 type Configs struct {
 	fx.Out
 	Provider app.ProviderStorageConfig
+	Token    app.TokenStorageConfig
 }
 
 // ProvideConfigs provides the fields of a storage config
 func ProvideConfigs(cfg app.StorageConfig) Configs {
 	return Configs{
 		Provider: cfg.Provider,
+		Token:    cfg.Token,
 	}
 }
 
