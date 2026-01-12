@@ -2,6 +2,7 @@ package ucan
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/alanshaw/1up-service/pkg/service"
 	"github.com/alanshaw/1up-service/pkg/service/routing"
@@ -83,6 +84,9 @@ func NewUCANConcludeHandler(id principal.Signer, router *routing.Router, tokens 
 				if err != nil {
 					return err
 				}
+				if len(proofs) == 0 {
+					return res.SetFailure(errors.New("MissingProofs", fmt.Sprintf("missing proof(s) for %q invocation", blob_caps.AcceptCommand)))
+				}
 
 				storageProviderInfo, err := router.Provider(req.Context(), storageProvider)
 				if err != nil {
@@ -101,6 +105,7 @@ func NewUCANConcludeHandler(id principal.Signer, router *routing.Router, tokens 
 					},
 					invocation.WithAudience(storageProvider),
 					invocation.WithProofs(proofLinks...),
+					invocation.WithNoNonce(),
 				)
 				if err != nil {
 					return err

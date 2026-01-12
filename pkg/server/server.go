@@ -7,11 +7,7 @@ import (
 	"strings"
 
 	"github.com/alanshaw/1up-service/pkg/build"
-	"github.com/alanshaw/1up-service/pkg/store/token"
-	"github.com/alanshaw/ucantone/ipld/codec/dagcbor"
 	"github.com/alanshaw/ucantone/ucan"
-	"github.com/alanshaw/ucantone/ucan/container"
-	"github.com/ipfs/go-cid"
 	logging "github.com/ipfs/go-log/v2"
 )
 
@@ -55,41 +51,6 @@ func NewRootHandler(id ucan.Principal) http.Handler {
 			w.Write([]byte(fmt.Sprintf("🍄 1up-service %s\n", info.Build.Version)))
 			w.Write([]byte(fmt.Sprintf("🆔 %s\n", info.ID)))
 			w.Write([]byte("🐙 https://github.com/alanshaw/1up-service\n"))
-		}
-	})
-}
-
-func NewReceiptHandler(tokens token.Store) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		taskLink, err := cid.Parse(r.PathValue("task"))
-		if err != nil {
-			http.Error(w, fmt.Sprintf("invalid task CID: %v", err), http.StatusBadRequest)
-			return
-		}
-
-		var invocations []ucan.Invocation
-		var delegations []ucan.Delegation
-		var receipts []ucan.Receipt
-		for c, err := range tokens.FindByTask(r.Context(), taskLink) {
-			if err != nil {
-				http.Error(w, fmt.Sprintf("failed to find receipt token: %v", err), http.StatusInternalServerError)
-				return
-			}
-			invocations = append(invocations, c.Invocations()...)
-			delegations = append(delegations, c.Delegations()...)
-			receipts = append(receipts, c.Receipts()...)
-		}
-
-		out := container.New(
-			container.WithInvocations(invocations...),
-			container.WithDelegations(delegations...),
-			container.WithReceipts(receipts...),
-		)
-
-		w.Header().Set("Content-Type", dagcbor.ContentType)
-		err = out.MarshalCBOR(w)
-		if err != nil {
-			log.Errorw("marshaling receipt container", "error", err)
 		}
 	})
 }

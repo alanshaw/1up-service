@@ -2,8 +2,8 @@ package receipt
 
 import (
 	echofx "github.com/alanshaw/1up-service/pkg/fx/echo"
-	"github.com/alanshaw/1up-service/pkg/server"
 	"github.com/alanshaw/1up-service/pkg/store/token"
+	"github.com/alanshaw/libracha/receipt"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 )
@@ -29,5 +29,5 @@ func NewReceiptHandler(tokens token.Store) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
-	e.GET("/receipt/:task", echo.WrapHandler(server.NewReceiptHandler(h.tokens)))
+	e.GET("/receipt/:task", echo.WrapHandler(receipt.NewHandler(h.tokens)))
 }

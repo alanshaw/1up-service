@@ -2,8 +2,11 @@ module github.com/alanshaw/1up-service
 
 go 1.25.3
 
+replace github.com/alanshaw/ucantone => ../ucantone
+replace github.com/alanshaw/libracha => ../libracha
+
 require (
-	github.com/alanshaw/libracha v0.0.0-20251219144841-bc96c56a118a
+	github.com/alanshaw/libracha v0.0.0-20260112114208-4f9010d963d3
 	github.com/alanshaw/ucantone v0.0.0-20260110085638-a2075f550eca
 	github.com/go-playground/validator/v10 v10.29.0
 	github.com/ipfs/go-cid v0.6.0

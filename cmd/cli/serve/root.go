@@ -34,8 +34,9 @@ func init() {
 		"Host to listen on")
 	cobra.CheckErr(viper.BindPFlag("server.host", Cmd.PersistentFlags().Lookup("host")))
 
-	Cmd.PersistentFlags().Uint(
+	Cmd.PersistentFlags().UintP(
 		"port",
+		"p",
 		3000,
 		"Port to listen on",
 	)

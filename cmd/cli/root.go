@@ -66,6 +66,8 @@ func initConfig() {
 			if inf, err := os.Stat(defaultCfgFile); err == nil && !inf.IsDir() {
 				log.Infof("loading config automatically from: %s", defaultCfgFile)
 				cfgFile = defaultCfgFile
+			} else {
+				log.Warnw("failed to stat default config file", "error", err)
 			}
 		}
 	}

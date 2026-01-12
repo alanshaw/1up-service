@@ -9,6 +9,7 @@ import (
 	"github.com/alanshaw/1up-service/pkg/service"
 	"github.com/alanshaw/1up-service/pkg/service/routing"
 	"github.com/alanshaw/1up-service/pkg/store/delegation"
+	"github.com/alanshaw/1up-service/pkg/store/token"
 	blob_caps "github.com/alanshaw/libracha/capabilities/blob"
 	http_caps "github.com/alanshaw/libracha/capabilities/http"
 	"github.com/alanshaw/libracha/digestutil"
@@ -32,7 +33,7 @@ import (
 
 var blobAddLog = logging.Logger("service/upload/ucan" + blob_caps.AddCommand)
 
-func NewBlobAddHandler(id principal.Signer, router *routing.Router) *service.Handler {
+func NewBlobAddHandler(id principal.Signer, router *routing.Router, tokens token.Store) *service.Handler {
 	return &service.Handler{
 		Capability: blob_caps.Add,
 		Handler: bindexec.NewHandler(
@@ -45,7 +46,7 @@ func NewBlobAddHandler(id principal.Signer, router *routing.Router) *service.Han
 				pstore := delegation.NewMapDelegationStore(req.Metadata().Delegations())
 				log := blobAddLog.With("space", space.DID(), "digest", digestutil.Format(blob.Digest))
 
-				provider, allocInv, allocRcpt, allocOK, err := doAllocate(req.Context(), id, router, pstore, space, blob, cause)
+				provider, allocInv, allocRcpt, allocOK, err := doAllocate(req.Context(), id, router, tokens, pstore, space, blob, cause)
 				if err != nil {
 					if errors.Is(err, routing.ErrCandidateUnavailable) {
 						log.Errorw("unable to select a storage provider", "error", err)
@@ -59,7 +60,7 @@ func NewBlobAddHandler(id principal.Signer, router *routing.Router) *service.Han
 					return err
 				}
 
-				accInv, accRcpt, err := maybeAccept(req.Context(), id, provider, space, pstore, blob, putInv, putRcpt)
+				accInv, accRcpt, err := maybeAccept(req.Context(), id, tokens, provider, space, pstore, blob, putInv, putRcpt)
 				if err != nil {
 					return err
 				}
@@ -99,6 +100,7 @@ func doAllocate(
 	ctx context.Context,
 	id principal.Signer,
 	router *routing.Router,
+	tokens token.Store,
 	pstore delegation.Store,
 	space ucan.Subject,
 	blob blob_caps.Blob,
@@ -112,7 +114,7 @@ func doAllocate(
 		if err != nil {
 			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
-		log := log.With("candidate", candidate.ID)
+		log := log.With("candidate", candidate.ID, "endpoint", candidate.Endpoint.String())
 		log.Infow("selected storage provider candidate")
 
 		matcher := ucanlib.NewDelegationMatcher(pstore)
@@ -142,21 +144,24 @@ func doAllocate(
 			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
 
-		c, err := client.NewHTTP(candidate.Endpoint)
+		c, err := client.NewHTTP(
+			candidate.Endpoint,
+			client.WithEventListener(&requestLogger{tokens}),
+		)
 		if err != nil {
 			return routing.ProviderInfo{}, nil, nil, blob_caps.AllocateOK{}, err
 		}
 
 		res, err := c.Execute(execution.NewRequest(ctx, inv, execution.WithProofs(proofs...)))
 		if err != nil {
-			log.Errorw("executing allocation invocation", "error", err)
+			log.Warnw("executing allocation invocation", "error", err)
 			exclusions = append(exclusions, candidate.ID)
 			continue
 		}
 
 		o, x := result.Unwrap(res.Receipt().Out())
 		if x != nil {
-			log.Errorw("failure result for allocation", "error", x)
+			log.Warnw("failure result for allocation", "error", x)
 			exclusions = append(exclusions, candidate.ID)
 			continue
 		}
@@ -164,14 +169,14 @@ func doAllocate(
 		var allocOK blob_caps.AllocateOK
 		err = datamodel.Rebind(datamodel.NewAny(o), &allocOK)
 		if err != nil {
-			log.Errorw("rebinding allocation result", "error", err)
+			log.Warnw("rebinding allocation result", "error", err)
 			exclusions = append(exclusions, candidate.ID)
 			continue
 		}
 
 		rcpt, ok := res.Metadata().Receipt(inv.Task().Link())
 		if !ok {
-			log.Errorw("missing receipt for allocation task")
+			log.Warnw("missing receipt for allocation task")
 			exclusions = append(exclusions, candidate.ID)
 			continue
 		}
@@ -260,6 +265,7 @@ func deriveDID(digest multihash.Multihash) (ucan_ed.Ed25519Signer, error) {
 func maybeAccept(
 	ctx context.Context,
 	id principal.Signer,
+	tokens token.Store,
 	provider routing.ProviderInfo,
 	space ucan.Principal,
 	pstore delegation.Store,
@@ -280,7 +286,7 @@ func maybeAccept(
 		return nil, nil, err
 	}
 
-	allocInv, err := blob_caps.Accept.Invoke(
+	accInv, err := blob_caps.Accept.Invoke(
 		id,
 		space,
 		&blob_caps.AcceptArguments{
@@ -290,37 +296,41 @@ func maybeAccept(
 			},
 		},
 		invocation.WithProofs(proofLinks...),
+		invocation.WithNoNonce(),
 	)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	var allocRcpt ucan.Receipt
+	var accRcpt ucan.Receipt
 
 	// If put has already succeeded, we can execute `/blob/accept` right away.
 	if putRcpt != nil {
 		_, x := result.Unwrap(putRcpt.Out())
 		if x == nil {
-			c, err := client.NewHTTP(provider.Endpoint)
+			c, err := client.NewHTTP(
+				provider.Endpoint,
+				client.WithEventListener(&requestLogger{tokens}),
+			)
 			if err != nil {
 				return nil, nil, err
 			}
 
-			res, err := c.Execute(execution.NewRequest(ctx, allocInv, execution.WithProofs(proofs...)))
+			res, err := c.Execute(execution.NewRequest(ctx, accInv, execution.WithProofs(proofs...)))
 			if err != nil {
 				return nil, nil, err
 			}
 
-			rcpt, ok := res.Metadata().Receipt(allocInv.Task().Link())
+			rcpt, ok := res.Metadata().Receipt(accInv.Task().Link())
 			if !ok {
 				log.Errorw("missing receipt for allocation task")
 				return nil, nil, err
 			}
-			allocRcpt = rcpt
+			accRcpt = rcpt
 
 			// TODO: add to blob registry
 		}
 	}
 
-	return allocInv, allocRcpt, nil
+	return accInv, accRcpt, nil
 }
